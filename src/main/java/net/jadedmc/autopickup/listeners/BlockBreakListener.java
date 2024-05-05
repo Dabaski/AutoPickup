@@ -1,5 +1,5 @@
 /*
- * This file is part of AutoPickup, licensed under the MIT License.
+ * This file is part of AutoPickupPlugin, licensed under the MIT License.
  *
  *  Copyright (c) JadedMC
  *  Copyright (c) contributors
@@ -73,7 +73,7 @@ public class BlockBreakListener implements Listener {
         }
 
         // Exit if auto pickup for blocks is disabled.
-        if(!plugin.getSettingsManager().getConfig().getBoolean("AutoPickup.Blocks")) {
+        if(!plugin.getSettingsManager().getConfig().getBoolean("AutoPickupPlugin.Blocks")) {
             return;
         }
 

@@ -1,6 +1,6 @@
-name: AutoPickup
+name: AutoPickupPlugin
 version: '${project.version}'
-main: net.jadedmc.autopickup.AutoPickup
+main: net.jadedmc.autopickup.AutoPickupPlugin
 api-version: 1.19
 authors: [JadedMC]
 description: Automatically Pick Up Items and Experience
@@ -8,6 +8,6 @@ website: https://www.jadedmc.net
 
 commands:
   autopickup:
-    description: AutoPickup plugin admin command.
+    description: AutoPickupPlugin plugin admin command.
     aliases: [pickup,ap]
     permission: autopickup.admin

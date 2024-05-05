@@ -1,5 +1,5 @@
 /*
- * This file is part of AutoPickup, licensed under the MIT License.
+ * This file is part of AutoPickupPlugin, licensed under the MIT License.
  *
  *  Copyright (c) JadedMC
  *  Copyright (c) contributors
@@ -70,7 +70,7 @@ public class EntityDeathListener implements Listener {
         }
 
         // Exit if auto pickup for mobs is disabled.
-        if(!plugin.getSettingsManager().getConfig().getBoolean("AutoPickup.Mobs")) {
+        if(!plugin.getSettingsManager().getConfig().getBoolean("AutoPickupPlugin.Mobs")) {
             return;
         }
 

@@ -1,5 +1,5 @@
 /*
- * This file is part of AutoPickup, licensed under the MIT License.
+ * This file is part of AutoPickupPlugin, licensed under the MIT License.
  *
  *  Copyright (c) JadedMC
  *  Copyright (c) contributors
@@ -62,7 +62,7 @@ public class PlayerFishListener implements Listener {
         Player player = event.getPlayer();
 
         // Exit if auto pickup for fishing is disabled.
-        if(!plugin.getSettingsManager().getConfig().getBoolean("AutoPickup.Fishing")) {
+        if(!plugin.getSettingsManager().getConfig().getBoolean("AutoPickupPlugin.Fishing")) {
             return;
         }
 
