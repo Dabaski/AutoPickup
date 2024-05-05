@@ -28,6 +28,7 @@ import net.jadedmc.autopickup.AutoPickupPlugin;
 import net.jadedmc.autopickup.utils.InventoryUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
@@ -105,6 +106,9 @@ public class BlockBreakListener implements Listener {
 
             // Add the dropped items to the player's inventory.
             Collection<ItemStack> remaining = InventoryUtils.addItems(player, drops);
+            if (remaining.size() < drops.size()) {
+                player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.0F, 1.0F);
+            }
 
             // Respawn any items that do not fit in the player's inventory.
             for(ItemStack drop : remaining) {
