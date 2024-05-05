@@ -1,5 +1,5 @@
 /*
- * This file is part of AutoPickupPlugin, licensed under the MIT License.
+ * This file is part of AutoPickup, licensed under the MIT License.
  *
  *  Copyright (c) JadedMC
  *  Copyright (c) contributors

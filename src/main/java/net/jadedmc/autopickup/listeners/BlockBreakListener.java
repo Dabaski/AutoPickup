@@ -1,5 +1,5 @@
 /*
- * This file is part of AutoPickupPlugin, licensed under the MIT License.
+ * This file is part of AutoPickup, licensed under the MIT License.
  *
  *  Copyright (c) JadedMC
  *  Copyright (c) contributors
@@ -29,6 +29,7 @@ import net.jadedmc.autopickup.utils.InventoryUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
@@ -39,10 +40,12 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Random;
 
 /**
  * This listens to the BlockBreakEvent event, which is called every time a player breaks a block.
@@ -66,6 +69,7 @@ public class BlockBreakListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
+        Random random = new Random();
 
         // Ignore players in creative mode.
         if(player.getGameMode() == GameMode.CREATIVE) {
@@ -73,7 +77,7 @@ public class BlockBreakListener implements Listener {
         }
 
         // Exit if auto pickup for blocks is disabled.
-        if(!plugin.getSettingsManager().getConfig().getBoolean("AutoPickupPlugin.Blocks")) {
+        if(!plugin.getSettingsManager().getConfig().getBoolean("AutoPickup.Blocks")) {
             return;
         }
 
@@ -101,14 +105,19 @@ public class BlockBreakListener implements Listener {
                 // Add the item to the dropped items collection.
                 ItemStack item = ((Item) entity).getItemStack();
                 drops.add(item);
+
+                // Play a sound for each item
+                float pitch = random.nextFloat() * 0.4f - 0.2f + 1.8f;
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    // Play the sound after the specified delay
+                    player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, pitch);
+                }, 5);
+//                player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 1f, pitch);
                 entity.remove();
             }
 
             // Add the dropped items to the player's inventory.
             Collection<ItemStack> remaining = InventoryUtils.addItems(player, drops);
-            if (remaining.size() < drops.size()) {
-                player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.0F, 1.0F);
-            }
 
             // Respawn any items that do not fit in the player's inventory.
             for(ItemStack drop : remaining) {
