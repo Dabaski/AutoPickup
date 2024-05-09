@@ -26,15 +26,19 @@ package net.jadedmc.autopickup.listeners;
 
 import net.jadedmc.autopickup.AutoPickupPlugin;
 import net.jadedmc.autopickup.utils.InventoryUtils;
+import org.bukkit.Sound;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 
 /**
  * This listens to the EntityDeathEvent event, which is called every time an entity dies.
@@ -58,12 +62,12 @@ public class EntityDeathListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityDeath(EntityDeathEvent event) {
         Player killer = event.getEntity().getKiller();
+        Random random = new Random();
 
         // Makes sure the killer is still online.
         if(killer == null) {
             return;
         }
-
         // Makes sure the entity is not a player.
         if(event.getEntity() instanceof Player) {
             return;
@@ -79,9 +83,15 @@ public class EntityDeathListener implements Listener {
             return;
         }
 
-        // Add dropped xp to the player.
-        killer.giveExp(event.getDroppedExp());
-        event.setDroppedExp(0);
+        ItemMeta itemmeta = killer.getInventory().getItemInMainHand().getItemMeta();
+        // Skip giving the XP drops if the player is using Mending, lets it drop on the ground
+        if (itemmeta == null) {
+            killer.giveExp(event.getDroppedExp());
+            event.setDroppedExp(0);
+        } else if (!itemmeta.hasEnchant(Enchantment.MENDING)) {
+            killer.giveExp(event.getDroppedExp());
+            event.setDroppedExp(0);
+        }
 
         // Clear the list of dropped items.
         Collection<ItemStack> drops = new ArrayList<>(event.getDrops());
@@ -89,6 +99,20 @@ public class EntityDeathListener implements Listener {
 
         // Adds the item caught to the player's inventory.
         Collection<ItemStack> remaining = InventoryUtils.addItems(killer, drops);
+
+        // Play sound for each item, up to 6
+        for (ItemStack item: drops) {int maxLoops = Math.min(item.getAmount(), 6);
+            for (int i = 0; i < maxLoops; i++) {
+                // Play a sound for each item
+                float pitch = random.nextFloat() * 0.4f - 0.2f + 1.8f;
+                // Generate a number between 2 and 5
+                int delay = random.nextInt(3) + 4;
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                    // Play the sound after the specified delay
+                    killer.playSound(killer.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, pitch);
+                }, delay);
+            }
+        }
 
         // Drops all items that could not fit in the player's inventory.
         event.getDrops().addAll(remaining);
