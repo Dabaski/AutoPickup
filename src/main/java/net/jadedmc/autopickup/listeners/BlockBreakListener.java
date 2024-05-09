@@ -25,6 +25,7 @@
 package net.jadedmc.autopickup.listeners;
 
 import net.jadedmc.autopickup.AutoPickupPlugin;
+import net.jadedmc.autopickup.utils.ChatUtils;
 import net.jadedmc.autopickup.utils.InventoryUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -32,6 +33,7 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -40,7 +42,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.Bukkit;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,9 +68,10 @@ public class BlockBreakListener implements Listener {
      * Runs when the event is called.
      * @param event BlockBreakEvent.
      */
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
+        ItemMeta itemmeta = player.getInventory().getItemInMainHand().getItemMeta();
         Random random = new Random();
 
         // Ignore players in creative mode.
@@ -86,9 +89,14 @@ public class BlockBreakListener implements Listener {
             return;
         }
 
-        // Give the player the dropped experience.
-        player.giveExp(event.getExpToDrop());
-        event.setExpToDrop(0);
+        // Skip giving the XP drops if the player is using Mending, lets it drop on the ground
+        if (itemmeta == null) {
+            player.giveExp(event.getExpToDrop());
+            event.setExpToDrop(0);
+        } else if (!itemmeta.hasEnchant(Enchantment.MENDING)) {
+            player.giveExp(event.getExpToDrop());
+            event.setExpToDrop(0);
+        }
 
         // There is no way to modify drops, so to support custom drops, checks all dropped item entities 1 tick after the event.
         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
@@ -106,13 +114,18 @@ public class BlockBreakListener implements Listener {
                 ItemStack item = ((Item) entity).getItemStack();
                 drops.add(item);
 
-                // Play a sound for each item
-                float pitch = random.nextFloat() * 0.4f - 0.2f + 1.8f;
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    // Play the sound after the specified delay
-                    player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, pitch);
-                }, 5);
-//                player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 1f, pitch);
+                int maxLoops = Math.min(item.getAmount(), 6);
+                for (int i = 0; i < maxLoops; i++) {
+                    // Play a sound for each item
+                    float pitch = random.nextFloat() * 0.4f - 0.2f + 1.8f;
+                    // Generate a number between 2 and 5
+                    int delay = random.nextInt(3) + 4;
+                    plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                        // Play the sound after the specified delay
+                        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, pitch);
+                    }, delay);
+                }
+
                 entity.remove();
             }
 
